@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">SteamNetWorth</string>
+    <string name="free">Бесплатно</string>
+    <string name="not_available">Ой, извините!</string>
+    <string name="region">Регион: %s</string>
+    <string name="change_region">Посчитать в другом регионе</string>
+    <string name="error_loading">Не удалось загрузить данные</string>
+    <string name="retry">Попробовать снова</string>
+</resources>
