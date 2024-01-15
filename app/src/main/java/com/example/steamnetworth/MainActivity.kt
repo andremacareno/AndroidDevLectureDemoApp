@@ -3,12 +3,18 @@ package com.example.steamnetworth
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.steamnetworth.models.Country
 import com.example.steamnetworth.models.Game
 import com.example.steamnetworth.models.GamePrice
@@ -28,6 +34,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.math.BigDecimal
 
@@ -44,6 +51,19 @@ class MainActivity : ComponentActivity() {
             "http://media.steampowered.com/steamcommunity/public/images/apps"
     }
 
+    private val countriesViewModel: SteamNetWorthViewModel by viewModels(
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return SteamNetWorthViewModel(Countries.RU) as T
+                }
+            }
+        }
+    )
+
+    private val countriesRepository = CountriesRepository()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -56,10 +76,23 @@ class MainActivity : ComponentActivity() {
                             SteamNetWorthScreenState.Loading
                         )
                     }
-                    SteamNetWorthScreen(state = state)
-                    val httpClient = LocalHttpClient.current
+                    var selectedCountry =
+                        countriesViewModel.activeCountry.collectAsState(initial = Countries.RU)
+                    val scope = rememberCoroutineScope()
+                    val client = rememberUpdatedState(newValue = LocalHttpClient.current)
+                    SteamNetWorthScreen(
+                        state = state,
+                        countries = countriesRepository.getCountries(),
+                        onCountryClick = {
+                            countriesViewModel.notifyCountryUpdated(it)
+                            scope.launch {
+                                loadData(client.value, selectedCountry.value)
+                                    .collect { state = it }
+                            }
+                        }
+                    )
                     LaunchedEffect(Unit) {
-                        loadData(httpClient)
+                        loadData(client.value, selectedCountry.value)
                             .collect { state = it }
                     }
                 }
@@ -67,12 +100,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun loadData(client: HttpClient): Flow<SteamNetWorthScreenState> = flow {
+    private suspend fun loadData(
+        client: HttpClient,
+        country: Country
+    ): Flow<SteamNetWorthScreenState> = flow {
         emit(SteamNetWorthScreenState.Loading)
         val userInfo = getUserInfo(client)!!
-        val (games, netWorth) = getOwnedGamesAndNetWorth(client)!!
-        // todo dynamic country
-        emit(SteamNetWorthScreenState.Content(userInfo, netWorth, games, Country("Россия", "ru")))
+        val (games, netWorth) = getOwnedGamesAndNetWorth(client, country)!!
+        emit(SteamNetWorthScreenState.Content(userInfo, netWorth, games, country))
     }.catch {
         it.printStackTrace()
         emit(SteamNetWorthScreenState.Error)
@@ -98,7 +133,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private suspend fun getOwnedGamesAndNetWorth(client: HttpClient): Pair<List<Game>, MoneyAmount>? {
+    private suspend fun getOwnedGamesAndNetWorth(
+        client: HttpClient,
+        country: Country
+    ): Pair<List<Game>, MoneyAmount>? {
         try {
             val ownedGamesUrl =
                 "$ENDPOINT_OWNED_GAMES/?key=$API_KEY&steamid=$STEAM_ID&include_appinfo=true&format=json"
@@ -112,7 +150,7 @@ class MainActivity : ComponentActivity() {
             val gamesInfoUrl = ENDPOINT_GAME_INFO
             val gamesInfoResponse = client.post(gamesInfoUrl) {
                 contentType(ContentType.Application.FormUrlEncoded)
-                setBody("appids=$appIds&filters=price_overview")        // TODO &cc=<country ISO> для региональных цен
+                setBody("appids=$appIds&filters=price_overview&cc=${country.isoCountryCode}")
             }
             val gamesInfoJsonObj = JSONObject(gamesInfoResponse.body<String>())
             var netWorthInCents = 0L
