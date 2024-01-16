@@ -1,12 +1,11 @@
 package com.example.steamnetworth.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,10 +28,9 @@ internal fun CountrySelectionContent(
 ) {
     LazyColumn(
         modifier = Modifier
-            .systemBarsPadding()
+            .navigationBarsPadding()
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(color = SteamDarkColors.background)
     ) {
         items(countries) { country ->
             Box(
@@ -50,15 +48,20 @@ internal fun CountrySelectionContent(
                     else -> ""
                 }
                 Text(
-                    modifier = Modifier.wrapContentHeight().align(Alignment.CenterStart),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .wrapContentHeight()
+                        .align(Alignment.CenterStart),
                     text = "$emojiToCountry ${country.name}",
                     color = SteamDarkColors.textPrimary,
                     fontSize = 14.sp
                 )
-                Divider(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart),
-                    color = SteamDarkColors.accentSecondary
-                )
+                if (country != countries.last()) {
+                    Divider(
+                        modifier = Modifier.fillMaxWidth().align(Alignment.BottomStart),
+                        color = SteamDarkColors.accentSecondary
+                    )
+                }
             }
         }
     }
