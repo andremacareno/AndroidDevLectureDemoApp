@@ -86,6 +86,12 @@ class MainActivity : ComponentActivity() {
                         onCountryClick = {
                             countriesViewModel.notifyCountryUpdated(it)
                             scope.launch {
+                                loadData(client.value, it)
+                                    .collect { state = it }
+                            }
+                        },
+                        onRetryClick = {
+                            scope.launch {
                                 loadData(client.value, selectedCountry.value)
                                     .collect { state = it }
                             }

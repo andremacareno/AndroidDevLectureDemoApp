@@ -59,7 +59,8 @@ import kotlinx.coroutines.launch
 internal fun SteamNetWorthScreen(
     state: SteamNetWorthScreenState,
     countries: List<Country>,
-    onCountryClick: (Country) -> Unit
+    onCountryClick: (Country) -> Unit,
+    onRetryClick: () -> Unit
 ) {
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
     val bottomSheetScope = rememberCoroutineScope()
@@ -80,7 +81,9 @@ internal fun SteamNetWorthScreen(
                     }
                 }
 
-                SteamNetWorthScreenState.Error -> SteamNetWorthError()
+                SteamNetWorthScreenState.Error -> SteamNetWorthError(
+                    onRetryClick = onRetryClick
+                )
                 SteamNetWorthScreenState.Loading -> SteamNetWorthLoading()
             }
             if (openBottomSheet) {
@@ -116,7 +119,7 @@ private fun SteamNetWorthLoading() {
 }
 
 @Composable
-private fun SteamNetWorthError() {
+private fun SteamNetWorthError(onRetryClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -143,7 +146,7 @@ private fun SteamNetWorthError() {
                     containerColor = SteamDarkColors.accent,
                     contentColor = SteamDarkColors.textPrimaryOnLight
                 ),
-                onClick = {},
+                onClick = onRetryClick,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 8.dp)
@@ -297,7 +300,7 @@ private fun SteamNetWorthLoadingPreview() {
 private fun SteamNetWorthErrorPreview() {
     SteamNetWorthTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            SteamNetWorthError()
+            SteamNetWorthError(onRetryClick = {})
         }
     }
 }
