@@ -58,7 +58,6 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun SteamNetWorthScreen(
     state: SteamNetWorthScreenState,
-    countries: List<Country>,
     onCountryClick: (Country) -> Unit,
     onRetryClick: () -> Unit
 ) {
@@ -93,7 +92,7 @@ internal fun SteamNetWorthScreen(
                     containerColor = SteamDarkColors.background
                 ) {
                     CountrySelectionContent(
-                        countries = countries,
+                        countries = state.countries,
                         onCountryClick = { country ->
                             openBottomSheet = false
                             onCountryClick(country)
@@ -164,7 +163,7 @@ private fun SteamNetWorthContent(
         ContentHeader(
             info = content.userInfo,
             netWorth = content.netWorth,
-            country = content.country,
+            country = content.selectedCountry,
             onCountryChangeClick = onCountryChangeClick
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -331,10 +330,11 @@ private fun SteamNetWorthContentPreview() {
                 price = GamePrice.NotAvailable
             )
         ),
-        country = Country(
+        selectedCountry = Country(
             name = "Россия",
             isoCountryCode = "ru"
-        )
+        ),
+        countries = emptyList()
     )
     SteamNetWorthTheme {
         Surface(modifier = Modifier.fillMaxSize()) {

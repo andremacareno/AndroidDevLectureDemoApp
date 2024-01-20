@@ -39,14 +39,13 @@ class MainActivity : ComponentActivity() {
                                     dispatchers = SteamNetWorthAppDispatchersImpl
                                 )
                             )
-                        )
+                        ),
+                        countriesRepository = CountriesRepository()
                     ) as T
                 }
             }
         }
     )
-
-    private val countriesRepository = CountriesRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,21 +53,13 @@ class MainActivity : ComponentActivity() {
             SteamNetWorthTheme {
                 val state =
                     viewModel.state.collectAsState()
-                val selectedCountry =
-                    viewModel.activeCountry.collectAsState()
                 SteamNetWorthScreen(
                     state = state.value,
-                    countries = countriesRepository.getCountries(),
-                    onCountryClick = {
-                        viewModel.notifyCountryUpdated(it)
-                        viewModel.loadData(it)
-                    },
-                    onRetryClick = {
-                        viewModel.loadData(selectedCountry.value)
-                    }
+                    onCountryClick = { viewModel.notifyCountryUpdated(it) },
+                    onRetryClick = { viewModel.loadData() }
                 )
                 LaunchedEffect(Unit) {
-                    viewModel.loadData(selectedCountry.value)
+                    viewModel.loadData()
                 }
             }
         }

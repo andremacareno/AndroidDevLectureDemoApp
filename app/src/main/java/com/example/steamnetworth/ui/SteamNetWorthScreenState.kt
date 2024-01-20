@@ -13,6 +13,10 @@ internal sealed interface SteamNetWorthScreenState {
         val userInfo: UserInfo,
         val netWorth: MoneyAmount,
         val games: List<Game>,
-        val country: Country
+        val selectedCountry: Country,
+        val countries: List<Country>
     ) : SteamNetWorthScreenState
 }
+
+internal val SteamNetWorthScreenState.countries: List<Country>
+    get() = (this as? SteamNetWorthScreenState.Content)?.countries.orEmpty()
