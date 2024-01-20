@@ -9,7 +9,7 @@
 
 Если проект не импортируется – возможно, репозиторий слишком долго не обновлялся и не поддерживается актуальными версиями Gradle или Android Gradle Plugin.
 
-Также в папке app понадобится создать файл Constants.kt следующего вида:
+Также в папке app/com/example/steamnetworth понадобится создать файл Constants.kt следующего вида:
 ```kotlin
 package com.example.steamnetworth
 
