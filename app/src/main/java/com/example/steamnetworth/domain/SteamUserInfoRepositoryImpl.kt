@@ -10,7 +10,9 @@ internal class SteamUserInfoRepositoryImpl(
 ) : SteamUserInfoRepository {
 
     override suspend fun getUserInfo(): UserInfo {
-        return localDataSource.getUserInfo() ?: remoteDataSource.getUserInfo()
+        return localDataSource.getUserInfo() ?: remoteDataSource.getUserInfo().also {
+            localDataSource.saveUserInfo(it)
+        }
     }
 
 }
