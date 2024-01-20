@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.steamnetworth.data.SteamNetWorthInfoRemoteDataSourceImpl
+import com.example.steamnetworth.data.SteamUserInfoLocalDataSourceImpl
 import com.example.steamnetworth.data.SteamUserInfoRemoteDataSourceImpl
 import com.example.steamnetworth.domain.SteamNetWorthRepositoryImpl
 import com.example.steamnetworth.domain.SteamNetWorthScreenDataLoadingUseCaseImpl
@@ -34,6 +35,7 @@ class MainActivity : ComponentActivity() {
                                 ),
                             ),
                             userInfoRepository = SteamUserInfoRepositoryImpl(
+                                localDataSource = SteamUserInfoLocalDataSourceImpl(),
                                 remoteDataSource = SteamUserInfoRemoteDataSourceImpl(
                                     httpClient = SteamNetWorthApp.getInstance().httpClient,
                                     dispatchers = SteamNetWorthAppDispatchersImpl
